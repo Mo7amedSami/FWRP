@@ -9,7 +9,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { auth } from "@/app/firebase"
-import { signInWithEmailAndPassword } from "firebase/auth"
+import { signInWithEmailAndPassword } from "firebase/auth" 
 
 export default function Login() {
   const router = useRouter()
@@ -25,7 +25,6 @@ export default function Login() {
       setError("Please enter both email and password")
       return
     }
-
     try {
       await signInWithEmailAndPassword(auth, email, password)
       router.push("/dashboard")

@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { auth, db } from "@/app/firebase"
+import { doc, setDoc } from "firebase/firestore"
 
 export default function CompleteProfile() {
   const router = useRouter()
@@ -18,7 +20,7 @@ export default function CompleteProfile() {
     additionalInfo: "",
   })
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData((prevData) => ({
       ...prevData,
@@ -26,14 +28,33 @@ export default function CompleteProfile() {
     }))
   }
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    // Here you would handle form submission, send data to backend, etc.
-    console.log("Profile completion submitted", formData)
-    // Simulating an API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    // After successful profile completion, redirect to the login page
-    router.push("/login")
+    try {
+      // Get the current user
+      const user = auth.currentUser
+      if (!user) {
+        alert("No authenticated user found. Please log in again.")
+        return
+      }
+
+      // Save profile data to Firestore under users/{uid}
+      await setDoc(doc(db, "users", user.uid), {
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        postalCode: formData.postalCode,
+        country: formData.country,
+        additionalInfo: formData.additionalInfo,
+        // You can add more fields if needed
+      })
+
+      // After successful profile completion, redirect to the login page
+      router.push("/login")
+    } catch (error) {
+      console.error("Error saving profile:", error)
+      alert("Failed to save profile. Please try again.")
+    }
   }
 
   return (

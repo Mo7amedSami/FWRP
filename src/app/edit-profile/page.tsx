@@ -15,59 +15,9 @@ import { useEffect } from "react"
 import { auth } from "@/app/firebase"
 import { onAuthStateChanged } from "firebase/auth"
 
-export default function DonateFood() {
+export default function EditProfile() {
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    location: "",
-    expiryDate: "",
-    pickupInstructions: "",
-  })
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
-  }
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-
-    try {
-      // Here you would typically upload the image and submit the form data to your backend
-      console.log("Form data:", formData)
-      console.log("Image uploaded")
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      // Redirect to dashboard after successful submission
-      router.push("/dashboard")
-    } catch (error) {
-      console.error("Error submitting form:", error)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
   const [user, setUser] = useState<{ displayName: string | null, email: string | null }>({ displayName: null, email: null })
 
   useEffect(() => {
@@ -81,6 +31,58 @@ export default function DonateFood() {
     })
     return () => unsubscribe()
   }, [])
+
+  const [profileData, setProfileData] = useState({
+    fullName: "John Doe",
+    email: "john.doe@example.com",
+    phone: "+1 (555) 123-4567",
+    address: "123 Main St",
+    city: "Anytown",
+    state: "CA",
+    postalCode: "12345",
+    bio: "I'm passionate about reducing food waste and helping my community.",
+  })
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setProfileData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+  }
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+
+    try {
+      // Here you would typically update the user profile in your backend
+      console.log("Profile data:", profileData)
+
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+
+      // Redirect to dashboard after successful update
+      router.push("/dashboard")
+    } catch (error) {
+      console.error("Error updating profile:", error)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
@@ -106,7 +108,7 @@ export default function DonateFood() {
           <div className="flex-1 py-6 px-4 space-y-6">
             <div className="flex flex-col items-center space-y-4">
               <Avatar className="h-20 w-20">
-                <AvatarImage src="/placeholder.svg?height=80&width=80" alt="Profile" />
+                <AvatarImage src={avatarPreview || "/placeholder.svg?height=80&width=80"} alt="Profile" />
                 <AvatarFallback>
                   <User className="h-10 w-10" />
                 </AvatarFallback>
@@ -118,7 +120,7 @@ export default function DonateFood() {
             </div>
 
             <nav className="mt-8 space-y-2">
-              <Link href="/edit-profile" className="flex items-center p-3 text-gray-700 rounded-md hover:bg-gray-100">
+              <Link href="/edit-profile" className="flex items-center p-3 bg-gray-100 text-green-600 rounded-md">
                 <Settings className="h-5 w-5 mr-3" />
                 Edit Profile
               </Link>
@@ -126,7 +128,7 @@ export default function DonateFood() {
                 <Home className="h-5 w-5 mr-3" />
                 Dashboard
               </Link>
-              <Link href="/donate-food" className="flex items-center p-3 bg-gray-100 text-green-600 rounded-md">
+              <Link href="/donate-food" className="flex items-center p-3 text-gray-700 rounded-md hover:bg-gray-100">
                 <Gift className="h-5 w-5 mr-3" />
                 Donate Food
               </Link>
@@ -154,114 +156,110 @@ export default function DonateFood() {
                 Back to Dashboard
               </Button>
             </Link>
-            <h1 className="text-3xl font-bold text-gray-900">Donate Food</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Edit Profile</h1>
           </div>
         </header>
         <main className="max-w-3xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-6">Share Your Excess Food</h2>
+            <h2 className="text-xl font-semibold mb-6">Personal Information</h2>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <Label htmlFor="title">Food Title</Label>
-                <Input
-                  id="title"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleChange}
-                  placeholder="E.g., Fresh Vegetables, Homemade Bread"
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  placeholder="Describe the food, quantity, and condition"
-                  rows={4}
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="location">Pickup Location</Label>
-                <Input
-                  id="location"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  placeholder="Address or general area for pickup"
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="expiryDate">Expiry Date</Label>
-                <Input
-                  id="expiryDate"
-                  name="expiryDate"
-                  type="date"
-                  value={formData.expiryDate}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="pickupInstructions">Pickup Instructions</Label>
-                <Textarea
-                  id="pickupInstructions"
-                  name="pickupInstructions"
-                  value={formData.pickupInstructions}
-                  onChange={handleChange}
-                  placeholder="Any special instructions for pickup"
-                  rows={2}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="foodImage">Food Image</Label>
-                <div className="mt-1 flex items-center">
-                  <label className="block w-full">
-                    <span className="sr-only">Choose food image</span>
+                <Label htmlFor="avatar">Profile Picture</Label>
+                <div className="mt-1 flex items-center space-x-5">
+                  <Avatar className="h-20 w-20">
+                    <AvatarImage src={avatarPreview || "/placeholder.svg?height=80&width=80"} alt="Profile" />
+                    <AvatarFallback>
+                      <User className="h-10 w-10" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <label className="block">
+                    <span className="sr-only">Choose profile picture</span>
                     <Input
-                      id="foodImage"
-                      name="foodImage"
+                      id="avatar"
+                      name="avatar"
                       type="file"
                       accept="image/*"
-                      onChange={handleImageChange}
+                      onChange={handleAvatarChange}
                       className="block w-full text-sm text-gray-500
                         file:mr-4 file:py-2 file:px-4
                         file:rounded-md file:border-0
                         file:text-sm file:font-semibold
                         file:bg-green-50 file:text-green-700
                         hover:file:bg-green-100"
-                      required
                     />
                   </label>
                 </div>
-
-                {imagePreview && (
-                  <div className="mt-4">
-                    <p className="text-sm text-gray-500 mb-2">Image Preview:</p>
-                    <div className="relative w-full h-64 bg-gray-100 rounded-md overflow-hidden">
-                      <img
-                        src={imagePreview || "/placeholder.svg"}
-                        alt="Food preview"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  </div>
-                )}
               </div>
 
-              <div className="pt-4">
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? "Submitting..." : "Donate Food"}
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                  <Label htmlFor="fullName">Full Name</Label>
+                  <Input id="fullName" name="fullName" value={profileData.fullName} onChange={handleChange} required />
+                </div>
+
+                <div>
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={profileData.email}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input id="phone" name="phone" value={profileData.phone} onChange={handleChange} required />
+                </div>
+
+                <div>
+                  <Label htmlFor="address">Address</Label>
+                  <Input id="address" name="address" value={profileData.address} onChange={handleChange} required />
+                </div>
+
+                <div>
+                  <Label htmlFor="city">City</Label>
+                  <Input id="city" name="city" value={profileData.city} onChange={handleChange} required />
+                </div>
+
+                <div>
+                  <Label htmlFor="state">State/Province</Label>
+                  <Input id="state" name="state" value={profileData.state} onChange={handleChange} required />
+                </div>
+
+                <div>
+                  <Label htmlFor="postalCode">Postal Code</Label>
+                  <Input
+                    id="postalCode"
+                    name="postalCode"
+                    value={profileData.postalCode}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="bio">Bio</Label>
+                <Textarea
+                  id="bio"
+                  name="bio"
+                  value={profileData.bio}
+                  onChange={handleChange}
+                  placeholder="Tell us a bit about yourself"
+                  rows={4}
+                />
+              </div>
+
+              <div className="pt-4 flex justify-end space-x-4">
+                <Button type="button" variant="outline" onClick={() => router.push("/dashboard")}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Saving..." : "Save Changes"}
                 </Button>
               </div>
             </form>

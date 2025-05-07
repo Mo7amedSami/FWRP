@@ -5,9 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { auth } from "@/app/firebase";
+import { auth, db } from "@/app/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc , setDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 
 export default function SignUp() {
   const router = useRouter();
@@ -36,6 +36,14 @@ export default function SignUp() {
       
       // Combine country code and phone into one field or store separately if needed
       const fullPhoneNumber = `${countryCode.value}${phone.value}`;
+
+      // Store user info in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        name: name.value,
+        email: email.value,
+        phone: fullPhoneNumber,
+        uid: user.uid
+      });
 
       // Redirect to complete profile page
       router.push("/complete-profile");
@@ -77,8 +85,15 @@ export default function SignUp() {
                   placeholder="+1"
                   className="w-20 mr-2"
                   required
+                  onInput={e => {
+                    e.target.value = e.target.value.replace(/\D/g, "");
+                  }}
                 />
-                <Input id="phone" name="phone" type="tel" autoComplete="tel" placeholder="(555) 555-5555" required />
+                <Input id="phone" name="phone" type="tel" autoComplete="tel" placeholder="(555) 555-5555" required pattern="[0-9]*" inputMode="numeric"
+                  onInput={e => {
+                    e.target.value = e.target.value.replace(/\D/g, "");
+                  }}
+                />
               </div>
               <p className="mt-2 text-sm text-gray-600">Please ensure that this phone number is reachable via WhatsApp.</p>
             </div>
@@ -108,7 +123,6 @@ export default function SignUp() {
                 {error}
               </div>
             )}
-
             <div>
               <Button type="submit" className="w-full">
                 Sign up

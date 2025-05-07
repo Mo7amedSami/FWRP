@@ -3,9 +3,11 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Home, MessageCircle, User, LogOut, Menu, Gift } from "lucide-react"
+import { Home, MessageCircle, User, LogOut, Menu, Gift, Settings } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { auth } from "@/app/firebase"
+import { onAuthStateChanged } from "firebase/auth"
 
 // This would typically come from an API or database
 const feedItems = [
@@ -34,6 +36,19 @@ const feedItems = [
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [user, setUser] = useState<{ displayName: string | null, email: string | null }>({ displayName: null, email: null })
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setUser({
+          displayName: firebaseUser.displayName || "No Username",
+          email: firebaseUser.email || "No Email"
+        })
+      }
+    })
+    return () => unsubscribe()
+  }, [])
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
@@ -65,13 +80,17 @@ export default function Dashboard() {
                 </AvatarFallback>
               </Avatar>
               <div className="text-center">
-                <h3 className="font-medium">John Doe</h3>
-                <p className="text-sm text-gray-500">john.doe@example.com</p>
+                <h3 className="font-medium">{user.displayName}</h3>
+                <p className="text-sm text-gray-500">{user.email}</p>
               </div>
             </div>
 
             <nav className="mt-8 space-y-2">
-              <Link href="/dashboard" className="flex items-center p-3 text-gray-700 rounded-md hover:bg-gray-100">
+              <Link href="/edit-profile" className="flex items-center p-3 text-gray-700 rounded-md hover:bg-gray-100">
+                <Settings className="h-5 w-5 mr-3" />
+                Edit Profile
+              </Link>
+              <Link href="/dashboard" className="flex items-center p-3 bg-gray-100 text-green-600 rounded-md">
                 <Home className="h-5 w-5 mr-3" />
                 Dashboard
               </Link>
@@ -106,7 +125,7 @@ export default function Dashboard() {
               <Card key={item.id} className="overflow-hidden">
                 <CardHeader className="p-4 flex items-center space-x-4">
                   <Avatar>
-                    <AvatarImage src={item.avatarSrc} alt={item.username} />
+                    <AvatarImage src={item.avatarSrc || "/placeholder.svg"} alt={item.username} />
                     <AvatarFallback>{item.username[0].toUpperCase()}</AvatarFallback>
                   </Avatar>
                   <span className="font-semibold">{item.username}</span>
@@ -136,4 +155,3 @@ export default function Dashboard() {
     </div>
   )
 }
-
